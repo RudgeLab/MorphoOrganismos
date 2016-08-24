@@ -19,17 +19,16 @@ gyneg = zeros(w,h,3);
 u = zeros(w,h);
 
 for i=1:1000;
-    Signal
     du = 10*del2(u) + ims(:,:,3) - u;
     u = u + 0.01*du;
     
     % Growth
-    bims = sum(ims>0.2,3)>0;    
+    bims = ims(:,:,1)>0.2; %sum(ims>0.2,3)>0;    
     dbims = bwdist(bims) - bwdist(1-bims);
     dbims = imfilter(double(dbims), H, 'symmetric'); % smooth kinks in distance map due to pixelisation of starting shape
     dbims = imfilter(double(dbims), H, 'symmetric');
-    %v = 1./(1+dbims.*dbims.*dbims.*dbims/10000);
-    v = 1 - dbims/max(dbims(:));
+    v = 1./(1+dbims.*dbims.*dbims.*dbims/100000);
+    %v = 1 - (dbims/min(dbims(:))).^2;
     
     % growth regulation by colour
     gims = imfilter(ims, H, 'symmetric');
@@ -37,8 +36,8 @@ for i=1:1000;
     %blue = 0.75*ims(:,:,3); %0.75*ims(:,:,3).*u./(1+u);
     red = ims(:,:,1);
     blue = ims(:,:,2);
-    gfac = 1-red; %(red*0.1 + blue*1)./(red+blue+0.1);
-    %v = v.*gfac;
+    gfac = blue; %(red*0.1 + blue*1)./(red+blue+0.1);
+    v = v.*gfac;
     
     % Radial direction vector from distance map
     [gvy,gvx] = gradient(dbims); %(sin(x/30).*cos(y/50))');
@@ -82,5 +81,5 @@ for i=1:1000;
     %imagesc(dbims); colorbar; axis image;
     fname = sprintf('frame%04d.png',i);
     %imwrite(ims, fname, 'png');
-    pause; 
+    pause(0.1); 
 end;
