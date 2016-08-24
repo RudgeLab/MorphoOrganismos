@@ -18,7 +18,7 @@ gyneg = zeros(w,h,3);
 
 u = zeros(w,h);
 
-for i=1:1000;
+for i=1:100;
     du = 10*del2(u) + ims(:,:,3) - u;
     u = u + 0.01*du;
     
@@ -75,9 +75,10 @@ for i=1:1000;
 
     subplot(1,2,1);
     %imshow(255*ims/max(ims(:)));
-    imagesc(ims(:,:,1).*(ims(:,:,1)>0.2)); colorbar; axis image;
+    imagesc(ims(:,:,1)>0.2); colorbar; axis image;
     subplot(1,2,2);
-    imagesc(diffims(:,:,1)); colorbar; axis image;
+    %imagesc(diffims(:,:,1)); colorbar; axis image;
+    imagesc(ims(:,:,2).*(ims(:,:,1)>0.2)); colorbar; axis image;
     %imagesc(dbims); colorbar; axis image;
     fname = sprintf('frame%04d.png',i);
     %imwrite(ims, fname, 'png');
