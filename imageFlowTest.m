@@ -27,8 +27,7 @@ for i=1:100;
     dbims = bwdist(bims) - bwdist(1-bims);
     %dbims = imfilter(double(dbims), H, 'symmetric'); % smooth kinks in distance map due to pixelisation of starting shape
     %dbims = imfilter(double(dbims), H, 'symmetric');
-    v = exp(dbims/10);
-    %v = 1./(1+dbims.*dbims.*dbims.*dbims/100);
+    v = 1./(1+dbims.*dbims.*dbims.*dbims/100);
     %v = 1 - (dbims/min(dbims(:))).^2;
     
     % growth regulation by colour
