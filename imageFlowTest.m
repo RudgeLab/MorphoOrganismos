@@ -18,7 +18,7 @@ gyneg = zeros(w,h,3);
 
 u = zeros(w,h);
 
-for i=1:100;
+for i=1:1000;
     du = 10*del2(u) + ims(:,:,3) - u;
     u = u + 0.01*du;
     
@@ -36,8 +36,14 @@ for i=1:100;
     %blue = 0.75*ims(:,:,3); %0.75*ims(:,:,3).*u./(1+u);
     red = ims(:,:,1);
     blue = ims(:,:,2);
-    gfac = blue; %(red*0.1 + blue*1)./(red+blue+0.1);
-    %v = v.*gfac;
+    %gfac = blue; %(red*0.1 + blue*1)./(red+blue+0.1);
+    
+    % Compute eigenvectors of laplacian on domain and use to compute speed
+    [V,D,G] = lapeigs(ims(:,:,1)>0.2, 10);
+    U = G;
+    U(G>0) = full(V(G(G>0),6)); % Just mapping sparse thing onto grid
+    gfac = 1 - U.*U*100; % totally adhoc speed function
+    v = v.*gfac;
     
     % Radial direction vector from distance map
     [gvy,gvx] = gradient(dbims); %(sin(x/30).*cos(y/50))');
@@ -74,14 +80,16 @@ for i=1:100;
     %ims(:,:,3) = ims(:,:,3).*bims;
 
     subplot(1,2,1);
-    imagesc(ims(:,:,2));colorbar; axis image;
+    imagesc(gfac);colorbar; axis image;
     %imshow(255*ims/max(ims(:)));
     %plot(ims(33,:,1)); %colorbar; axis image;
     subplot(1,2,2);
     %imagesc(diffims(:,:,1)); colorbar; axis image;
-    imagesc(ims(:,:,2).*(ims(:,:,1)>0.2)); colorbar; axis image;
+    imagesc((ims(:,:,1)>0.2)); colorbar; axis image;
     %imagesc(dbims); colorbar; axis image;
     fname = sprintf('frame%04d.png',i);
     %imwrite(ims, fname, 'png');
+    
+    disp(diag(D)); % print eigenvalues
     pause(0.1); 
 end;
