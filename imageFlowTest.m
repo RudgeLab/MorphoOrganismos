@@ -3,7 +3,7 @@ ims=testim;
 %ims(:,:,2)=0;
 
 H = fspecial('gaussian',3,3);
-ims = imfilter(double(ims), H, 'symmetric');
+%ims = imfilter(double(ims), H, 'symmetric');
 
 figure;
 s = size(ims);
@@ -25,9 +25,10 @@ for i=1:100;
     % Growth
     bims = ims(:,:,1)>0.2; %sum(ims>0.2,3)>0;    
     dbims = bwdist(bims) - bwdist(1-bims);
-    dbims = imfilter(double(dbims), H, 'symmetric'); % smooth kinks in distance map due to pixelisation of starting shape
-    dbims = imfilter(double(dbims), H, 'symmetric');
-    v = 1./(1+dbims.*dbims.*dbims.*dbims/100000);
+    %dbims = imfilter(double(dbims), H, 'symmetric'); % smooth kinks in distance map due to pixelisation of starting shape
+    %dbims = imfilter(double(dbims), H, 'symmetric');
+    v = exp(dbims/10);
+    %v = 1./(1+dbims.*dbims.*dbims.*dbims/100);
     %v = 1 - (dbims/min(dbims(:))).^2;
     
     % growth regulation by colour
@@ -37,7 +38,7 @@ for i=1:100;
     red = ims(:,:,1);
     blue = ims(:,:,2);
     gfac = blue; %(red*0.1 + blue*1)./(red+blue+0.1);
-    v = v.*gfac;
+    %v = v.*gfac;
     
     % Radial direction vector from distance map
     [gvy,gvx] = gradient(dbims); %(sin(x/30).*cos(y/50))');
@@ -74,8 +75,9 @@ for i=1:100;
     %ims(:,:,3) = ims(:,:,3).*bims;
 
     subplot(1,2,1);
+    imagesc(ims(:,:,2));colorbar; axis image;
     %imshow(255*ims/max(ims(:)));
-    imagesc(ims(:,:,1)>0.2); colorbar; axis image;
+    %plot(ims(33,:,1)); %colorbar; axis image;
     subplot(1,2,2);
     %imagesc(diffims(:,:,1)); colorbar; axis image;
     imagesc(ims(:,:,2).*(ims(:,:,1)>0.2)); colorbar; axis image;
