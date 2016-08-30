@@ -18,6 +18,14 @@ gyneg = zeros(w,h,3);
 
 u = zeros(w,h);
 
+% Compute an eigenvector of initial shape for reference
+[V,D,G] = lapeigs(ims(:,:,1)>0.2, 50);
+d = diag(D);
+idx = find((d<1.5).*(d>1)); % indices of eigenvalues 1.5<lambda<2
+Vm = mean(V(:,idx),2); % linear sum of eigenvectors weighted equally (flat dispersion relation)
+Uprev = G;
+Uprev(G>0) = full(Vm(G(G>0))); % Just mapping sparse thing onto grid
+
 for i=1:1000;
     du = 10*del2(u) + ims(:,:,3) - u;
     u = u + 0.01*du;
@@ -39,10 +47,20 @@ for i=1:1000;
     %gfac = blue; %(red*0.1 + blue*1)./(red+blue+0.1);
     
     % Compute eigenvectors of laplacian on domain and use to compute speed
-    [V,D,G] = lapeigs(ims(:,:,1)>0.2, 10);
-    U = G;
-    U(G>0) = full(V(G(G>0),6)); % Just mapping sparse thing onto grid
-    gfac = 1 - U.*U*100; % totally adhoc speed function
+    [V,D,G] = lapeigs(ims(:,:,1)>0.2, 50);
+    d = diag(D);
+    idx = find((d<1.5).*(d>1)); % indices of eigenvalues 1.5<lambda<2
+    nv = length(idx);
+    % construct matrix of eigenvectors in range
+    Uall = zeros(w*h,nv);
+    for vv=1:nv;
+        Uall(G>0,vv) = full( V(G(G>0),idx(vv)) );
+    end;
+    % Project previous pattern onto new eigenspace
+    Uproj = Uall*Uall'*Uprev(:);
+    Uproj = reshape(Uproj,w,h);
+    %Uprev = Uproj; % reset previous pattern to new
+    gfac = 1 - Uproj.*Uproj*100; % totally adhoc speed function
     v = v.*gfac;
     
     % Radial direction vector from distance map
@@ -73,17 +91,20 @@ for i=1:1000;
     % advection + diffusion of signals == img(:,:,1:2)
     
     ims = ims - 0.1*diffims;
-    ims(:,:,3) = ims(:,:,3) + 0.1*(ims(:,:,2) - mu*ims(:,:,3));
+    %ims(:,:,3) = ims(:,:,3) + 0.1*(ims(:,:,2) - mu*ims(:,:,3));
     
     %ims(:,:,1) = ims(:,:,1).*bims;
     %ims(:,:,2) = ims(:,:,2).*bims;
     %ims(:,:,3) = ims(:,:,3).*bims;
 
-    subplot(1,2,1);
-    imagesc(gfac);colorbar; axis image;
+    subplot(1,3,1);
+    imagesc(Uproj);colorbar; axis image; title('Uproj');
+    subplot(1,3,2);
+    imagesc(Uprev);colorbar; axis image; title('Uprev');
+    Uprev = Uproj;
     %imshow(255*ims/max(ims(:)));
     %plot(ims(33,:,1)); %colorbar; axis image;
-    subplot(1,2,2);
+    subplot(1,3,3);
     %imagesc(diffims(:,:,1)); colorbar; axis image;
     imagesc((ims(:,:,1)>0.2)); colorbar; axis image;
     %imagesc(dbims); colorbar; axis image;
