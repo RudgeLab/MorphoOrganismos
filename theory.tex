@@ -1,0 +1,153 @@
+\documentclass{report}
+
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{comment}
+\usepackage{graphicx} 
+\usepackage{amsthm} 
+\usepackage{amsfonts}
+\usepackage{pdfpages} 
+\usepackage{siunitx} 
+\usepackage{mhchem}
+\usepackage{subfloat}
+\usepackage{fullpage}
+\usepackage{array}
+\usepackage[toc,page]{appendix}
+
+\newcommand{\ecoli}{\textit{E. coli}}
+\newcommand{\ecloni}{\textit{E. cloni 10g}} 
+\newcommand{\bsub}{\textit{B. subtilis}} 
+\newcommand{\pbad}{P$_{BAD}$} 
+\newcommand{\plux}{P$_{LUX}$}
+\newcommand{\etal}{\textit{et al.}} 
+\newcommand{\invivo}{\textit{in vivo}}
+\newcommand{\invitro}{\textit{in vitro}} 
+\newcommand{\csix}{3OC6HSL}
+
+\newcommand{\tred}[1]{\textcolor{red}{#1}}
+\newcommand{\tgr}[1]{\textcolor{green}{#1}}
+
+% Units
+\DeclareSIUnit{\molar}{M} 
+\newcommand{\ul}{\si{\micro\litre}} 
+\newcommand{\um}{\si{\micro\metre}}
+\newcommand{\ml}{\si{\milli\litre}} 
+\newcommand{\nm}{\si{\nano\metre}} 
+\newcommand{\ugml}{\si{\micro\gram\per\milli\litre}} 
+\newcommand{\degC}{\si{\degreeCelsius}}
+
+% Misc
+\newcommand{\tenx}{\ensuremath{10\times}}
+\newcommand{\fortyx}{\ensuremath{40\times}}
+\newcommand{\sixtyx}{\ensuremath{60\times}}
+\newcommand{\hundredx}{\ensuremath{100\times}}
+\newcommand{\odsix}{\ensuremath{\textrm{OD}_{600}}}
+\newcommand{\Pspo}{\ensuremath{\textrm{P}_{\textrm{\scriptsize SPO1-26}}}}
+
+% Matrix/ vector shit
+\let\oldhat\hat 
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\renewcommand{\hat}[1]{\oldhat{\mathbf{#1}}}
+\let\oldcaption\caption
+%\renewcommand{\caption}[2][]{\oldcaption[#1]{\small\textbf{#1.} #2\normalsize}}
+\renewcommand{\caption}[2][]{\oldcaption[#1]{\textbf{#1.} #2}}
+
+\newcommand{\mat}{\mathbf} 
+\newcommand{\invmat}[1]{\mat{#1}^{-1}}
+\newcommand{\deltap}{\Delta \vec{p}} 
+\newcommand{\deltaL}{\Delta \vec{L}}
+\newcommand{\deltag}{\Delta g} 
+\newcommand{\Iinv}{\mat{I}^{-1}}
+\newcommand{\Minv}{\mat{M}^{-1}}
+\newcommand{\crossmat}[1]{{\left[#1\right]}_{\times}}
+
+\newtheorem{remark}{Remark} 
+\newtheorem*{note}{Note} 
+
+\begin{document} 
+
+\chapter{Eigenmorphs? Rational design of pattern and morphology in eigenspace}
+
+\section{Background maths}
+\section{Eigenfunctions of the laplacian}
+Eigenfunctions of the laplacian $\nabla^2$ satisfy
+\begin{equation}
+\nabla^2 v(\vec{x}) + k^2 v(\vec{x}) = 0
+\end{equation}
+
+Given some boundary condition, such as $v=0$ or $\nabla v=0$ at the boundary of the
+domain there is a discrete (infinite) set of functions $v_i(\vec{x})$, with
+eigenvalue $\lambda_i$.  For a 1-dimentionsal domain with zero boundary
+conditions for example, the eignfunctions are sine waves $sin(k\pi/L)$ where
+$L$ is the length of the domain and $k \in {0,1,2,3...}$.
+
+On other arbitrary domains we have to compute them numerically. You can see they
+are waves because the equation says when $v>0$ the curvature $\nabla^2v<0$ and
+vice versa.
+
+\section{Eigenfunction expansion or projection}
+They also have the nice property that they form a complete basis for the space
+of differentiable functions that satisfy the boundary conditions. That means that
+any pattern (gene expression, signal concentration, etc.) on a given domain
+(colony, organism, etc.) can be represented as a series
+\begin{equation}
+f(\vec{x}) = \sum_{i} w_i v_i(\vec{x})
+\end{equation}
+Which is exactly the Fourier series for a rectangular or linear domain.
+
+The equivalent of the Fourier transform for arbitrary shaped domains is the
+eigenspectrum, which gives the amount of each eigenfunction represented in a
+particular pattern
+\begin{equation}
+w_i = \langle f, v_i \rangle = 
+\end{equation}
+
+\section{Eigenvectors and discrete space}
+For computation we represent patterns on a regular grid like an image. It turns
+out convenient to string this out as a 1-dimensional vector of length $w\times
+h$ for an image of width $w$ and height $h$. The operator $\nabla^2$ is then a
+matrix $\mat{A}$ which has eigenvectors $\vec{v}_i$ such that $\mat{A}\vec{v}_i
+= \lambda_i \vec{v}_i$. Note that now there are a finite number of eigenvectors
+equal to the number of grid points or pixels in the image.
+
+The eigenspectrum is just a basis transformation from the grid basis, where each
+value in the grid (image) is an element of the vector, to the basis of
+eigenvectors. This is the natural frequency domain of the shape defined by the
+boundary conditions. Lets call this the eigenspace.
+
+In discrete space we can define a matrix of eigenvectors
+$\mat{W}$ where each column is an eigenvector $\vec{v}_i$ such that
+\begin{equation}
+\vec{w} = \mat{W}\vec{g}
+\end{equation}
+is the eigenspace transform of the image $\vec{g}$, and
+\begin{equation}
+\vec{g} = \mat{W}^T\vec{w}
+\end{equation}
+is the inverse transform. This is because the eigenvectors form an orthonormal
+basis for the space of images (patterns).
+
+\section{Design of pattern in eigenspace}
+This means we can compute the eigenspectrum of any pattern, for example one that
+we might want to design a genetic system to produce. Alternatively we could
+design the spectrum of shape that we require from our genetic system. It would
+be easy (relatively) to make a tool that allows you to adjust a curve and see
+the resulting pattern (in Matlab for example). This curve could be a polynomial
+for example. It seems reasonable that a useful biological pattern should be
+localised in eigenspace (frequency space). If all wavelengths are represented
+equally we have white noise, which possibly is maximal entropy. 
+
+What we would like to do is choose a pattern and infer a genetic mechanism
+coupled to signalling that could generate it. These genetic components would
+come from a registry of characterised parts. For theoretical work we show the
+principle for example by randomly generating part parameters to make a library.
+
+\section{Reacion diffusion systems}
+In this sense any patterning system can be seen as selecting (weighting)
+some eigenvectors more than others. 
+
+\section{Morphology }
+
+\section{}
+\end{document}
+
