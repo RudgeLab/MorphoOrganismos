@@ -77,7 +77,7 @@ Eigenfunctions of the laplacian $\nabla^2$ satisfy
 
 Given some boundary condition, such as $v=0$ or $\nabla v=0$ at the boundary of the
 domain there is a discrete (infinite) set of functions $v_i(\vec{x})$, with
-eigenvalue $\lambda_i$.  For a 1-dimentionsal domain with zero boundary
+eigenvalue $k_i$.  For a 1-dimentionsal domain with zero boundary
 conditions for example, the eignfunctions are sine waves $sin(k\pi/L)$ where
 $L$ is the length of the domain and $k \in {0,1,2,3...}$.
 
@@ -172,12 +172,42 @@ where $\mat{A}$ is the Jacobian
 We can use this to do a linear stability analysis and test for patterning. The
 definition of a Turing system is that it has an unstable homogeneous
 equilibrium, and a stable heterogeneous equilibrium. Around the homogeneous
-equilibrium the behaviour can be approximated by the equation above. Expanding
-the solution in eigenvectors we get
+equilibrium the behaviour can be approximated by the equation above. This is a
+linear equation and so the solutions can be expanded in eigenvectors to get
 \begin{equation}
+\vec{w} = \sum_{k=0}^{N} c_k \vec{W}_k e^{\lambda(k^2) t}
+\end{equation}
+where $\lambda(k^2)$ is called the \textit{dispersion relation} and tells us how
+each eigenvector (wave) grows in time. If $\lambda(k^2)>0$ the wave grows, and
+this part of the perturbation is propagated. This is how the system effectively
+selects eigenvectors.
 
+For a two-component reaction-diffusion system as above it can be shown (Murray)
+that the dispersion relation $\lambda(k^2)$ is a quadratic in $k^2$. This means it
+has a single peak and a range $k^2_{min}<k^2<k^2_{max}$ for which $\lambda>0$.
+(Note the use of $k^2$ is because the sign of the spatial eigenvalue $k$ is
+irrelevant, bit tedious to explain this but it comes out in the expansion above
+when you compute the weights $c_k$).
 
-\section{Morphology }
+Three things to note:
+\begin{enumerate}
+\item For a \textit{linear} reaction-diffusion system (not at all realistic
+but useful to study) we can solve \textit{exactly} the evolution of the system
+(eigenspace expansion above).
+\item In general (non-linear systems) the only way to get the final eigenspectrum 
+of a patterning system is to compute the solution numerically.
+\item BUT, if we start from this equilibrium we \textit{can} compute the
+evolution of \textit{small} perturbations from the eigenspace expansion above.
+The spectrum says which waves grow.
+\end{enumerate}
+
+This last point will be very useful when we consider growing domains below.
+
+\section{Growing domains}
+
+\section{Coupling morphology to pattern}
+
+\section{Morphology in eigenspace?}
 
 \section{}
 \end{document}
