@@ -106,7 +106,7 @@ w_i = \langle f, v_i \rangle =
 For computation we represent patterns on a regular grid like an image. It turns
 out convenient to string this out as a 1-dimensional vector of length $w\times
 h$ for an image of width $w$ and height $h$. The operator $\nabla^2$ is then a
-matrix $\mat{A}$ which has eigenvectors $\vec{v}_i$ such that $\mat{A}\vec{v}_i
+matrix $\mat{M}$ which has eigenvectors $\vec{v}_i$ such that $\mat{A}\vec{v}_i
 = \lambda_i \vec{v}_i$. Note that now there are a finite number of eigenvectors
 equal to the number of grid points or pixels in the image.
 
@@ -144,7 +144,38 @@ principle for example by randomly generating part parameters to make a library.
 
 \section{Reacion diffusion systems}
 In this sense any patterning system can be seen as selecting (weighting)
-some eigenvectors more than others. 
+some eigenvectors more than others. Reaction-diffusion systems are an obvious
+example (there are others, see Murray). 
+\begin{eqnarray}
+u_t &=& \nabla^2u + \gamma f(u,v) \\
+v_t &=& d \nabla^2v + \gamma g(u,v)
+\end{eqnarray}
+
+In general we can't predict the final pattern
+without solving numerically, but close to an equilibrium (homogeneous or
+heterogeneous) we can approximate the reaction term as linear in the
+perturbation $\vec{w} = (u-u_0,v-v_0)^T$ where $(u_0,v_0)$ is the equilibrium
+giving
+\begin{equation}
+\vec{w}_t = \nabla^2\vec{w} + \mat{A}\vec{w}
+\end{equation}
+where $\mat{A}$ is the Jacobian
+\begin{equation}
+\mat{A}=
+ \left[
+  \begin{array}{ c c }
+     f_u & f_v \\
+     g_u & g_v
+  \end{array} \right]
+\end{equation}
+
+We can use this to do a linear stability analysis and test for patterning. The
+definition of a Turing system is that it has an unstable homogeneous
+equilibrium, and a stable heterogeneous equilibrium. Around the homogeneous
+equilibrium the behaviour can be approximated by the equation above. Expanding
+the solution in eigenvectors we get
+\begin{equation}
+
 
 \section{Morphology }
 
