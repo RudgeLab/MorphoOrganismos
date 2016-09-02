@@ -1,4 +1,4 @@
- function [V,D,G,A] = lapeigs(im, n);
+function [V,D,G,A] = lapeigs(im, n, eval);
 
 % Number grid inside image>0
 G = double(im)./double(max(im(:)));
@@ -9,7 +9,10 @@ G(p) = (1:length(p))';
 A = delsq(G);
 
 % Solve eigs of laplacian 
-[V,D] = eigs(A,length(A)-1,1.25);
+if isempty(n);
+    n = length(A)-1;
+end;
+[V,D] = eigs(A,n,eval);
 return;
 
 figure; 
