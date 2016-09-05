@@ -19,17 +19,25 @@ gyneg = zeros(w,h,3);
 u = zeros(w,h);
 
 % Compute an eigenvector of initial shape for reference
-[V,D,G] = lapeigs(ims(:,:,1)>0.2, 100, 1.25);
+[V,D,G] = lapeigs(imdilate(ims(:,:,1)>0.2,ones(3,3)), 100, 0.5);
 d = diag(D);
-%idx = find((d<1.5).*(d>1)); % indices of eigenvalues 1.5<lambda<2
-l = 1-(d-1.25).*(d-1.25);
-idx = find(l>0); % quadratic dispersion
+%dd = (d-0.2).*(d-0.2);
+%idx = find(abs(dd-min(dd))<1e-8);
+
+%idx = find((d<0.5).*(d>0.02)); % indices of eigenvalues 1.5<lambda<2
+l = 1-100*(d-0.5).*(d-0.5);
+idx = find(l);
+%idx = find(l>0); % quadratic dispersion
 %Vm = mean(V(:,idx),2); % linear sum of eigenvectors weighted equally (flat dispersion relation)
-Vm = V(:,idx)*exp(10*l(idx));
+Vm = real(V(:,idx))*(l.*exp(l));
 Uprev = G;
 Uprev(G>0) = full(Vm(G(G>0))); % Just mapping sparse thing onto grid
 Vprev = V(:,idx);
 dprev = d(idx);;
+
+Uprev = zeros(w,h);
+idx = find(ims(:,:,1)>0);
+Uprev(idx) = ones(size(idx));
 
 for i=1:1000;
     du = 10*del2(u) + ims(:,:,3) - u;
@@ -52,11 +60,19 @@ for i=1:1000;
     %gfac = blue; %(red*0.1 + blue*1)./(red+blue+0.1);
     
     % Compute eigenvectors of laplacian on domain and use to compute speed
-    [V,D,G] = lapeigs(ims(:,:,1)>0.2, 100, 1.25);
+    [V,D,G] = lapeigs(imdilate(ims(:,:,1)>0.2,ones(3,3)), 100, 0.5);
     d = diag(D);
-    l = 1-(d-1.25).*(d-1.25);
-    idx = find(l>0); % quadratic dispersion
-    %idx = find((d<1.5).*(d>1)); % indices of eigenvalues 1.5<lambda<2
+    %dd = (d-0.2).*(d-0.2);
+    %disp('Length prev idx = ');
+    %disp(size(idx));
+    %idx = find(abs(dd-min(dd))<1e-8);
+    disp('Length idx = ');
+    disp(size(idx));
+    
+    l = 1-100*(d-0.5).*(d-0.5);
+    idx = find(l);
+    %idx = find(l>0); % quadratic dispersion
+    %idx = find((d<0.5).*(d>0.02)); % indices of eigenvalues 1.5<lambda<2
     nv = length(idx);
     
     % Find multiplicity of eigenvalues (assume only 2x)
@@ -66,18 +82,23 @@ for i=1:1000;
     % construct matrix of eigenvectors in range
     Uall = zeros(w*h,nv);
     for vv=1:nv;
-        Uall(G>0,vv) = full( V(G(G>0),idx(vv)) );
+        Uall(G>0,vv) = full( real(V(G(G>0),idx(vv)) ));
     end;
     % Project previous pattern onto new eigenspace
-    Uproj = Uall*(exp(10*l(idx)).*(Uall'*Uprev(:)));
+    Uproj = Uall* (exp(l*0.125).*(Uall'*Uprev(:)));
     Uproj = reshape(Uproj,w,h);
+    disp('Norm')
+    disp(norm(Uproj-Uprev));
     %Uproj = Uproj./max(Uproj(:));
     %Uprev = Uproj; % reset previous pattern to new
     Vprev = V(:,idx);
     dprev = d(idx);
-    [gux,guy] = gradient(Uproj/max(Uproj(:)));
-    gfac = (gux.*gux+guy.*guy)*1e1; % totally adhoc speed function
-    %v = v.*gfac;
+    [gux,guy] = gradient(Uprev/max(Uprev(:)));
+    Uprev = Uproj;
+    Uprev = Uprev/norm(Uprev); % This is some kind of non-linearity to stop the exponential increase in U
+    %gfac = (gux.*gux+guy.*guy)*1e1; % totally adhoc speed function
+    gfac = max(0,Uprev)*1; % totally adhoc speed function
+    v = v.*gfac;
     
     % Radial direction vector from distance map
     [gvy,gvx] = gradient(dbims); %(sin(x/30).*cos(y/50))');
@@ -114,11 +135,10 @@ for i=1:1000;
     %ims(:,:,3) = ims(:,:,3).*bims;
 
     subplot(1,3,1);
-    imagesc(Uproj);colorbar; axis image; title('Uproj');
+    imagesc(v);colorbar; axis image; title('Uproj');
     subplot(1,3,2);
-    plot(d(idx), l(idx), '.');
-    %imagesc(v);colorbar; axis image; title('Uprev');
-    Uprev = Uproj;
+    %plot(d(idx), l(idx), '.');
+    imagesc(Uprev);colorbar; axis image; title('Uprev');
     %imshow(255*ims/max(ims(:)));
     %plot(ims(33,:,1)); %colorbar; axis image;
     subplot(1,3,3);
@@ -128,6 +148,6 @@ for i=1:1000;
     fname = sprintf('frame%04d.png',i);
     %imwrite(ims, fname, 'png');
     
-    disp(diag(D)); % print eigenvalues
+    %disp(diag(D)); % print eigenvalues
     pause(0.1); 
 end;

@@ -6,13 +6,16 @@ p = find(G);
 G(p) = (1:length(p))';
 
 % Discrete laplacian on grid, with u=0 on boundary
-A = delsq(G);
+A = delsq_noflux(G);
 
 % Solve eigs of laplacian 
 if isempty(n);
-    n = length(A)-1;
+    n = length(A)-2;
 end;
-[V,D] = eigs(A,n,eval);
+opts = struct();
+opts.isreal = true;
+opts.issym = true;
+[V,D] = eigs(A,n,eval,opts);
 return;
 
 figure; 

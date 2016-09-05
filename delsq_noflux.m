@@ -27,25 +27,27 @@ s = 4*ones(size(p));
 for k = [-1 m 1 -m]
    % Possible neighbors in k-th direction
    Q = G(p+k);
-   % Neighbours in opposite direction (TJR)
-   R = G(p-k)
    
    % Index of points with interior neighbors
    q = find(Q);
-   % boundary points (TJR)
-   nq = find(Q==0); 
    
+   % Neighbours in opposite direction (TJR)
+   R = G(p(q)-k);
+   nr = find(R==0); %TJR, points with no neighbour in opposite direction
+
    % TJR, note: this bit ignores neighbors outside the domain,
    % effectively then assuming they are =0
    % Connect interior points to neighbors with -1's.
    i = [i; G(p(q))];
    j = [j; Q(q)];
-   s = [s; -ones(length(q),1)];
    
-   % Here we need to account for the boundary condition
-   % that grad(u).n=0 at the boundary (n=normal)
-   %
-   % This means (du/dx)n_x = (du/dy)n_y
-   % How do we do this??
+   % TJR, here for points at the boundary that have no neighbour
+   % in direction -k should get a 2 instead of 1
+   %s = [s; -ones(length(q),1)];
+   w = ones(length(q),1);
+   w(nr) = 1;
+   s = [s; -w];
+   
+
 end
 D = sparse(i,j,s);
