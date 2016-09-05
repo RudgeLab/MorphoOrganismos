@@ -60,7 +60,7 @@ for i=1:1000;
     %gfac = blue; %(red*0.1 + blue*1)./(red+blue+0.1);
     
     % Compute eigenvectors of laplacian on domain and use to compute speed
-    [V,D,G] = lapeigs(imdilate(ims(:,:,1)>0.2,ones(3,3)), 100, 0.5);
+    [V,D,G] = lapeigs(imdilate(ims(:,:,1)>0.2,ones(3,3)), 100, 0.25);
     d = diag(D);
     %dd = (d-0.2).*(d-0.2);
     %disp('Length prev idx = ');
@@ -69,7 +69,7 @@ for i=1:1000;
     disp('Length idx = ');
     disp(size(idx));
     
-    l = 1-100*(d-0.5).*(d-0.5);
+    l = 1-100*(d-0.25).*(d-0.25);
     idx = find(l);
     %idx = find(l>0); % quadratic dispersion
     %idx = find((d<0.5).*(d>0.02)); % indices of eigenvalues 1.5<lambda<2
@@ -85,7 +85,7 @@ for i=1:1000;
         Uall(G>0,vv) = full( real(V(G(G>0),idx(vv)) ));
     end;
     % Project previous pattern onto new eigenspace
-    Uproj = Uall* (exp(l*0.125).*(Uall'*Uprev(:)));
+    Uproj = Uall* (exp(l*1).*(Uall'*Uprev(:)));
     Uproj = reshape(Uproj,w,h);
     disp('Norm')
     disp(norm(Uproj-Uprev));
