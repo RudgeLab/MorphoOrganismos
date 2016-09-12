@@ -23,7 +23,7 @@ for i=2:n+1;
     %phi(:,:,i) = levelSet(phi(:,:,i-1), ones(w,h), dt, 1);
     
     % Compute eigenvectors and eigenvalues (100 closest to d0
-    [V,D,G] = lapeigs(phi(:,:,i)<=0, 100, d0);
+    [V,D,G] = lapeigs(phi(:,:,i)<=0, 50, d0);
     d = diag(D);    % ordered list of eigenvalues
     
     % Project previous pattern onto eigenvectors

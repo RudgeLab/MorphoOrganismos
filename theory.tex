@@ -75,7 +75,7 @@ Eigenfunctions of the laplacian $\nabla^2$ satisfy
 \nabla^2 v(\vec{x}) + k^2 v(\vec{x}) = 0
 \end{equation}
 
-Given some boundary condition, such as $v=0$ or $\nabla v=0$ at the boundary of the
+Given some boundary condition, such as $v=0$ or $\nabla v=0$ at the boundary $\Omega$ of the
 domain there is a discrete (infinite) set of functions $v_i(\vec{x})$, with
 eigenvalue $k_i$.  For a 1-dimentionsal domain with zero boundary
 conditions for example, the eignfunctions are sine waves $sin(k\pi/L)$ where
@@ -99,15 +99,16 @@ The equivalent of the Fourier transform for arbitrary shaped domains is the
 eigenspectrum, which gives the amount of each eigenfunction represented in a
 particular pattern
 \begin{equation}
-w_i = \langle f, v_i \rangle = 
+w_i = \langle f, v_i \rangle = \int_{\Omega} \! f(\vec{x}) v_i(\vec{x}) \, d\vec{x}
 \end{equation}
 
 \section{Eigenvectors and discrete space}
 For computation we represent patterns on a regular grid like an image. It turns
 out convenient to string this out as a 1-dimensional vector of length $w\times
 h$ for an image of width $w$ and height $h$. The operator $\nabla^2$ is then a
-matrix $\mat{M}$ which has eigenvectors $\vec{v}_i$ such that $\mat{A}\vec{v}_i
-= \lambda_i \vec{v}_i$. Note that now there are a finite number of eigenvectors
+matrix $\mat{M}$ which has eigenvectors $\vec{v}_i$ such that $\mat{M}\vec{v}_i
+= \lambda_i \vec{v}_i$. The eigenvectors are images strung out as
+one-dimensional vectors. Note that now there are a finite number of eigenvectors
 equal to the number of grid points or pixels in the image.
 
 The eigenspectrum is just a basis transformation from the grid basis, where each
@@ -204,6 +205,80 @@ The spectrum says which waves grow.
 This last point will be very useful when we consider growing domains below.
 
 \section{Growing domains}
+We want to think about patterns in growing populations of cells such as
+bacterial colonies or biofilms. Equally this could be plant or animal cells. The
+pattern is then formed on a domain $\Omega(t)$ that evolves in time. Lets define
+the shape with a level set $\phi(\vec{x},t)$ which is such that $\phi(\vec{x},t)=0$
+at the boundary $\partial \Omega(t)$.
+
+\subsection{Speed does not vary in time}
+If the domain grows outwards perpendicular to its boundary at some speed
+$F(\vec{x})>0$ then the domain generated from some initial $\phi(\vec{x},t=0)$ can be found from the Eikonal
+equation (see Sethian paper),
+
+\begin{equation}
+\left| \nabla T \right| = \frac{1}{F}
+\end{equation}
+
+where $T(\vec{x})$ is the time at which the boundary crosses the point
+$\vec{x}$, and the gradient is with boundary conditions $T=0$. 
+The boundary is defined by $\phi(\vec{x},0)=0$.
+That is, points inside the domain $\Omega(t)$ are where
+$T(\vec{x})\le t$ at all times $t$.
+
+Mathematically then $T(\vec{x})=t$ is the boundary $\partial \Omega$. This
+won't work numerically because the zero crossing is likely between two pixels..
+Ideally we then want to compute the time varying eigenfunctions $v_i(\vec{x},t)$
+and eigenvalues $k_i^2(t)$. This tells us how the pattern evolves in time.
+
+\subsection{Speed varying in time}
+A simple approach is to take a small time step and say that the speed is
+approximately constant during this time. Then we solve the Eikonal equation for
+$\Delta phi$
+
+
+\section{Discretisation into a matrix sequence}
+If we discretise time we can define a matrix at each time step that computes the
+laplacian with given boundary conditions. These boundary conditions are applied
+at pixels where $T(\vec{x})<t$, with $t \in \Delta t\{0,1,2\dots\}$. If the
+matrix at each time step $t=j\Delta t$ is $\mat{A}_j$ then we want to solve the
+eigensystem
+
+\begin{equation}
+\mat{A}_j \vec{v}_j + k_j^2 \vec{v}_j = 0
+\end{equation}
+
+Since these matrices act on images (strung out as vectors) of the same size, we
+can write
+
+\begin{equation}
+\mat{A}_{j+1} = \mat{A}_{j} + \Delta\mat{A}_j
+\end{equation}
+
+The difference between matrices at subsequent time steps $\Delta\mat{A}_j$ is
+due to the change in domain boundary location. The matrix applies a laplacian
+kernel at each pixel, a weighted sum of the pixel itself and its 4 neightbours.
+The weights of neighbours are either 1 or 2 depending if at the boundary.
+This means that when the domain changes some pixels which were weighted as a 1
+become weighted as 2, and vice versa. So this is a very sparse matrix with only
+non-zero elements at rows corresponding to boundary pixels for the previous and
+new boundaries.
+
+We can also just directly think about a time varying matrix, eigenvector and
+eigenvalue $\mat{A}(t)v(t) = k(t)^2 v(t)$. And 
+
+\begin{equation}
+(\mat{A}(t) + k(t)^2\mat{I}) v(t) = 0
+\end{equation}
+
+differentiate both sides
+
+\begin{equation}
+\left( \frac{\partial\mat{A}}{\partial t} + 2k\frac{\partial k}{\partial t}
+\mat{I} \right) v 
++
+(\mat{A}(t) + k(t)^2\mat{I}) \frac{\partial v}{\partial t}
+\end{equation}
 
 \section{Coupling morphology to pattern}
 
