@@ -208,46 +208,71 @@ This last point will be very useful when we consider growing domains below.
 We want to think about patterns in growing populations of cells such as
 bacterial colonies or biofilms. Equally this could be plant or animal cells. The
 pattern is then formed on a domain $\Omega(t)$ that evolves in time. Lets define
-the shape with a level set $\phi(\vec{x},t)$ which is such that $\phi(\vec{x},t)=0$
-at the boundary $\partial \Omega(t)$.
+the shape with a level set $\phi(\vec{x},t)$ which is such that
+$\phi(\vec{x},t)=0$ at the boundary $\partial \Omega(t)$.  Ideally we then want
+to compute the time varying eigenfunctions $v_i(\vec{x},t)$ and eigenvalues
+$k_i^2(t)$ of this growing domain.  This tells us how the pattern evolves in
+time. Its not clear if this is possible so we'll just compute them numerically
+at discrete time steps. But anyway useful to keep in mind.
 
 \subsection{Speed does not vary in time}
 If the domain grows outwards perpendicular to its boundary at some speed
-$F(\vec{x})>0$ then the domain generated from some initial $\phi(\vec{x},t=0)$ can be found from the Eikonal
-equation (see Sethian paper),
+$F(\vec{x})>0$ then the domain generated from some initial $\phi(\vec{x},t=0)$
+can be found from the Eikonal equation (see Sethian paper),
 
 \begin{equation}
 \left| \nabla T \right| = \frac{1}{F}
 \end{equation}
 
 where $T(\vec{x})$ is the time at which the boundary crosses the point
-$\vec{x}$, and the gradient is with boundary conditions $T=0$. 
-The boundary is defined by $\phi(\vec{x},0)=0$.
+$\vec{x}$, and the gradient is with boundary conditions $T=0$ at the 
+ boundary defined by $\phi(\vec{x},0)=0$.
 That is, points inside the domain $\Omega(t)$ are where
 $T(\vec{x})\le t$ at all times $t$.
 
-Mathematically then $T(\vec{x})=t$ is the boundary $\partial \Omega$. This
-won't work numerically because the zero crossing is likely between two pixels..
-Ideally we then want to compute the time varying eigenfunctions $v_i(\vec{x},t)$
-and eigenvalues $k_i^2(t)$. This tells us how the pattern evolves in time.
 
 \subsection{Speed varying in time}
+More generally solve the equation
+
+\begin{equation}
+\frac{\partial \phi}{\partial t} = F(\vec{x},t)\left|\nabla\phi(\vec{x})\right|
+\end{equation}
+
 A simple approach is to take a small time step and say that the speed is
-approximately constant during this time. Then we solve the Eikonal equation for
-$\Delta phi$
+approximately constant during this time. Then we solve at each time step $t$
 
+\begin{equation}
+\phi(t+\Delta t) = \phi(t) + F(\vec{x},t) \left|\nabla\phi(\vec{x})\right| \Delta t 
+\end{equation}
 
-\section{Discretisation into a matrix sequence}
+with some discretisation of $\nabla$, given appropriate boundary conditions.
+
+\subsection{Speed outside the domain}
+For our model we want the speed to be determined by some patterning system,
+genetics, signals etc. which are only defined on the domain (colony). We can't
+say that the speed is zero outside the domain because then it doesn't grow. This
+is an issue with the approach of tracking an interface between two things
+(phases). A simple solution, given zero-flux boundary conditions so that the
+speed is not changing at the boundary, is to extrapolate the speed outwards into
+the background.
+
+I approximated this in matlab by finding the closest boundary point for every
+background pixel. I then set the speed at each background point 
+to the closest boundary pixel's speed.
+
+\section{Discretisation of pattern into a matrix sequence}
 If we discretise time we can define a matrix at each time step that computes the
 laplacian with given boundary conditions. These boundary conditions are applied
-at pixels where $T(\vec{x})<t$, with $t \in \Delta t\{0,1,2\dots\}$. If the
-matrix at each time step $t=j\Delta t$ is $\mat{A}_j$ then we want to solve the
-eigensystem
+at pixels where $T(\vec{x})<t$, or $\phi(\vec{x},t)<0$, with $t \in \Delta
+t\{0,1,2\dots\}$. If the matrix at each time step $t=j\Delta t$ is $\mat{A}_j$
+then we want to solve the eigensystem
 
 \begin{equation}
 \mat{A}_j \vec{v}_j + k_j^2 \vec{v}_j = 0
 \end{equation}
 
+So our pattern at time step $t=j\Delta t$ is a weighted linear combination of
+these vectors as described above.
 Since these matrices act on images (strung out as vectors) of the same size, we
 can write
 
@@ -264,6 +289,10 @@ become weighted as 2, and vice versa. So this is a very sparse matrix with only
 non-zero elements at rows corresponding to boundary pixels for the previous and
 new boundaries.
 
+This is something to think more about. Can we get some information about changes
+in the eigenvectors/values from the structure of $\Delta\mat{A}$?
+
+\begin{comment}
 We can also just directly think about a time varying matrix, eigenvector and
 eigenvalue $\mat{A}(t)v(t) = k(t)^2 v(t)$. And 
 
@@ -280,9 +309,64 @@ differentiate both sides
 (\mat{A}(t) + k(t)^2\mat{I}) \frac{\partial v}{\partial t}
 \end{equation}
 
+\end{comment}
+
 \section{Coupling morphology to pattern}
+Now it gets more interesting. The speed function $F(\vec{x},t)$ is
+a pattern on our growing domain, colony biofilm etc. So we could decompose it into
+eigenvectors. But it seems to me that the rate of motion is going to be a
+complicated non-linear function of some underlying pattern of gene expression.
+
+\begin{equation}
+F(\vec{x},t) = F(\vec{u}(\vec{x},t))
+\end{equation}
+
+where $\vec{u}(\vec{x},t)$ is a vector of gene expression levels. In general
+then this is generated by some patterning system that selects eigenfunctions as
+discussed above. 
+
+Now we have the coupled systems
+
+\begin{equation}
+\phi_{j+1} = \phi_j + F(\vec{u}_j) \left|\nabla\phi_j\right| \Delta t 
+%\frac{\partial \phi}{\partial t} = F(u(\vec{x},t))\left|\nabla\phi(\vec{x})\right|
+\end{equation}
+
+and the eigensystem
+
+\begin{equation}
+\mat{A}_j \vec{v}_j + k_j^2 \vec{v}_j = 0
+\end{equation}
+
+where $\mat{A}_j$ encodes the laplacian with boundary given by
+$\phi_j(\vec{x})=0$, and the pattern $\vec{u}$ is a weighted sum of these
+eigenvectors
+
+\begin{equation}
+\vec{u}_{j} = \sum_{k=0}^{N} c_k \vec{v}_k e^{\lambda(k^2) \Delta t}
+\end{equation}
+
+and the weights $c_k$ are the projection of $\vec{u}_j$ into the new 
+
+
 
 \section{Morphology in eigenspace?}
+
+\section{Appearance of cells as transitions through eigenfunctions as stable
+modes}
+Conceptually cells in a tissue are periodic structures, and so can be described
+using the approach above. You could think of the distribution of any molecular
+constituent of a cell as a pattern, and that pattern is described by a linear
+combination of eigenfunctions or waves. More abstractly one could think of a
+pattern that is the probability distribution for something. This could for
+example be the probability of observing the nucleus, that is the unit of
+identity for that organism. Or why not the distribution of a gene? Or of an
+epigenetic state/switch? Those patterns then are actually what we use to define
+a cell.
+
+A function/pattern satisfying given boundary conditions, and subject to
+integrating to unity, is a wave function. This is analagous to quantum mechanics
+and Schroedinger's equation. 
 
 \section{}
 \end{document}
