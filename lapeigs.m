@@ -1,4 +1,4 @@
-function [V,D,G,A] = lapeigs(im, n, eval);
+function [V,D,G] = lapeigs(im, n, eval);
 
 % Number grid inside image>0
 G = double(im)./double(max(im(:)));

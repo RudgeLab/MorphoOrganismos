@@ -19,12 +19,13 @@ kd = 100;
 
 for i=2:n+1;
     % Update phi by growing with speed u.*u
-    phi(:,:,i) = levelSet(phi(:,:,i-1), u(:,:,i-1) - min(min(u(:,:,i-1))), dt, 1);
+    speed = 10*(u(:,:,i-1) - min(min(u(:,:,i-1))));
+    phi(:,:,i) = levelSet(phi(:,:,i-1), speed, dt, 1);
     %phi(:,:,i) = levelSet(phi(:,:,i-1), ones(w,h), dt, 1);
     
-    % Compute eigenvectors and eigenvalues (100 closest to d0
+    % Compute eigenvectors and eigenvalues (50 closest to d0
     [V,D,G] = lapeigs(phi(:,:,i)<=0, 50, d0);
-    d = diag(D);    % ordered list of eigenvalues
+    d = diag(D);    % ordered list of eigenvalues (k^2)
     
     % Project previous pattern onto eigenvectors
     uprev = u(:,:,i-1);
@@ -33,10 +34,10 @@ for i=2:n+1;
     % Compute dispersion relation values, quadratic
     lam = 1 - kd*(d-d0).*(d-d0);
     
-    % New pattern is sum of eigenvectors weighted by lam*w
+    % New pattern is sum of eigenvectors weighted by exp(lam*dt)*w
     uu = G;
     uu(G>0) = V(G(G>0),:)*(exp(lam*dt).*ww);
-    uu = uu/max(uu(:));
+    uu = uu/max(uu(:)); % normalise to avoid exponential growth
     u(:,:,i) = reshape(real(uu),w,h);
     
     % Plotting
