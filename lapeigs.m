@@ -6,7 +6,7 @@ p = find(G);
 G(p) = (1:length(p))';
 
 % Discrete laplacian on grid, with u=0 on boundary
-A = delsq_noflux(G);
+A = delsq(G); %_noflux(G);
 
 % Solve eigs of laplacian 
 if isempty(n);

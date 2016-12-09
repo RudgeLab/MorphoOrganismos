@@ -39,7 +39,7 @@ Uprev = zeros(w,h);
 idx = find(ims(:,:,1)>0);
 Uprev(idx) = ones(size(idx));
 
-for i=1:1000;
+for i=1:10000;
     du = 10*del2(u) + ims(:,:,3) - u;
     u = u + 0.01*du;
     
@@ -97,7 +97,7 @@ for i=1:1000;
     Uprev = Uproj;
     Uprev = Uprev/norm(Uprev); % This is some kind of non-linearity to stop the exponential increase in U
     %gfac = (gux.*gux+guy.*guy)*1e1; % totally adhoc speed function
-    gfac = max(0,Uprev)*1; % totally adhoc speed function
+    gfac = 0.01+5*max(0,Uprev)*1; % totally adhoc speed function
     v = v.*gfac;
     
     % Radial direction vector from distance map
@@ -135,7 +135,7 @@ for i=1:1000;
     %ims(:,:,3) = ims(:,:,3).*bims;
 
     subplot(1,3,1);
-    imagesc(v);colorbar; axis image; title('Uproj');
+    imagesc(v);colorbar; axis image; colormap(jet); title('Uproj');
     subplot(1,3,2);
     %plot(d(idx), l(idx), '.');
     imagesc(Uprev);colorbar; axis image; title('Uprev');

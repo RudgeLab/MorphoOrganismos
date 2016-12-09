@@ -1,4 +1,4 @@
-\documentclass{report}
+\documentclass{article}
 
 \usepackage{booktabs}
 \usepackage{float}
@@ -66,26 +66,34 @@
 
 \begin{document} 
 
-\chapter{Eigenmorphs? Rational design of pattern and morphology in eigenspace}
+\title{Eigenmorphs? Rational design of pattern and morphology in eigenspace}
+\author{Tim Rudge}
+\maketitle
 
 \section{Background maths}
-\section{Eigenfunctions of the laplacian}
+\subsection{Eigenfunctions of the laplacian}
 Eigenfunctions of the laplacian $\nabla^2$ satisfy
 \begin{equation}
 \nabla^2 v(\vec{x}) + k^2 v(\vec{x}) = 0
 \end{equation}
 
-Given some boundary condition, such as $v=0$ or $\nabla v=0$ at the boundary $\Omega$ of the
-domain there is a discrete (infinite) set of functions $v_i(\vec{x})$, with
-eigenvalue $k_i$.  For a 1-dimentionsal domain with zero boundary
-conditions for example, the eignfunctions are sine waves $sin(k\pi/L)$ where
-$L$ is the length of the domain and $k \in {0,1,2,3...}$.
+\begin{equation}
+\nabla^2 \vec{v_k}(\vec{x}) + k^2 \vec{v_k}(\vec{x}) = 0
+\end{equation}
+
+given some boundary condition, such as $v=0$ or $\hat{\vec{n}}\cdot\nabla v=0$
+or $\hat{\vec{n}}\cdot\nabla \vec{v_k}=0$
+at the boundary $\partial\Omega$ of the domain $\Omega$. There is a discrete
+(infinite) set of functions $v_i(\vec{x})$, with eigenvalues $k_i$.  For a
+1-dimentionsal domain with zero boundary conditions for example, the
+eignfunctions are sine waves $sin(k\pi/L)$ where $L$ is the length of the domain
+and $k \in {0,1,2,3...}$.
 
 On other arbitrary domains we have to compute them numerically. You can see they
 are waves because the equation says when $v>0$ the curvature $\nabla^2v<0$ and
 vice versa.
 
-\section{Eigenfunction expansion or projection}
+\subsection{Eigenfunction expansion or projection}
 They also have the nice property that they form a complete basis for the space
 of differentiable functions that satisfy the boundary conditions. That means that
 any pattern (gene expression, signal concentration, etc.) on a given domain
@@ -93,23 +101,23 @@ any pattern (gene expression, signal concentration, etc.) on a given domain
 \begin{equation}
 f(\vec{x}) = \sum_{i} w_i v_i(\vec{x})
 \end{equation}
-Which is exactly the Fourier series for a rectangular or linear domain.
 
-The equivalent of the Fourier transform for arbitrary shaped domains is the
-eigenspectrum, which gives the amount of each eigenfunction represented in a
+The Fourier transform is a particular case of the eigenspectrum (for linear or
+ractangular domain), and in general (for arbitrarily shaped domains) the
+eigenspectrum gives the amount of each eigenfunction represented in a
 particular pattern
 \begin{equation}
 w_i = \langle f, v_i \rangle = \int_{\Omega} \! f(\vec{x}) v_i(\vec{x}) \, d\vec{x}
 \end{equation}
 
-\section{Eigenvectors and discrete space}
+\subsection{Eigenvectors and discrete space}
 For computation we represent patterns on a regular grid like an image. It turns
-out convenient to string this out as a 1-dimensional vector of length $w\times
-h$ for an image of width $w$ and height $h$. The operator $\nabla^2$ is then a
-matrix $\mat{M}$ which has eigenvectors $\vec{v}_i$ such that $\mat{M}\vec{v}_i
+out convenient to string this out as a 1-dimensional vector of length $wh$
+for an image of width $w$ and height $h$. The operator $\nabla^2$ is then a
+$wh \times wh$ matrix $\mat{M}$ which has eigenvectors $\vec{v}_i$ such that $\mat{M}\vec{v}_i
 = \lambda_i \vec{v}_i$. The eigenvectors are images strung out as
 one-dimensional vectors. Note that now there are a finite number of eigenvectors
-equal to the number of grid points or pixels in the image.
+equal to $wh$, the number of grid points or pixels in the image.
 
 The eigenspectrum is just a basis transformation from the grid basis, where each
 value in the grid (image) is an element of the vector, to the basis of
@@ -152,13 +160,20 @@ u_t &=& \nabla^2u + \gamma f(u,v) \\
 v_t &=& d \nabla^2v + \gamma g(u,v)
 \end{eqnarray}
 
+That is for two species (chemicals, genes etc.). More generally we write a
+vector of species,
+
+\begin{equation}
+\vec{u}_t = \mat{D}\nabla^2\vec{u} + \gamma \vec{f}(\vec{u})
+\end{equation}
+
 In general we can't predict the final pattern
 without solving numerically, but close to an equilibrium (homogeneous or
 heterogeneous) we can approximate the reaction term as linear in the
 perturbation $\vec{w} = (u-u_0,v-v_0)^T$ where $(u_0,v_0)$ is the equilibrium
 giving
 \begin{equation}
-\vec{w}_t = \nabla^2\vec{w} + \mat{A}\vec{w}
+\vec{w}_t = \mat{D}\nabla^2\vec{w} + \mat{A}\vec{w}
 \end{equation}
 where $\mat{A}$ is the Jacobian
 \begin{equation}
@@ -176,9 +191,10 @@ equilibrium, and a stable heterogeneous equilibrium. Around the homogeneous
 equilibrium the behaviour can be approximated by the equation above. This is a
 linear equation and so the solutions can be expanded in eigenvectors to get
 \begin{equation}
-\vec{w} = \sum_{k=0}^{N} c_k \vec{W}_k e^{\lambda(k^2) t}
+\vec{w} = \sum_{k} c_k \vec{v}_k e^{\lambda(k^2) t}
 \end{equation}
-where $\lambda(k^2)$ is called the \textit{dispersion relation} and tells us how
+where the sum is over the discrete eigenvalue/vector pairs, 
+and $\lambda(k^2)$ is called the \textit{dispersion relation} that tells us how
 each eigenvector (wave) grows in time. If $\lambda(k^2)>0$ the wave grows, and
 this part of the perturbation is propagated. This is how the system effectively
 selects eigenvectors.
@@ -260,15 +276,15 @@ I approximated this in matlab by finding the closest boundary point for every
 background pixel. I then set the speed at each background point 
 to the closest boundary pixel's speed.
 
-\section{Discretisation of pattern into a matrix sequence}
+\subsection{Discretisation of pattern into a matrix sequence}
 If we discretise time we can define a matrix at each time step that computes the
 laplacian with given boundary conditions. These boundary conditions are applied
 at pixels where $T(\vec{x})<t$, or $\phi(\vec{x},t)<0$, with $t \in \Delta
-t\{0,1,2\dots\}$. If the matrix at each time step $t=j\Delta t$ is $\mat{A}_j$
+t\{0,1,2\dots\}$. If the matrix at each time step $t=j\Delta t$ is $\mat{M}(t)$
 then we want to solve the eigensystem
 
 \begin{equation}
-\mat{A}_j \vec{v}_j + k_j^2 \vec{v}_j = 0
+\mat{M}(t) \vec{v}(t) + k^2 \vec{v}(t) = 0
 \end{equation}
 
 So our pattern at time step $t=j\Delta t$ is a weighted linear combination of
@@ -277,10 +293,10 @@ Since these matrices act on images (strung out as vectors) of the same size, we
 can write
 
 \begin{equation}
-\mat{A}_{j+1} = \mat{A}_{j} + \Delta\mat{A}_j
+\mat{M}(t+\Delta t) = \mat{M}(t) + \Delta\mat{M}(t)
 \end{equation}
 
-The difference between matrices at subsequent time steps $\Delta\mat{A}_j$ is
+The difference between matrices at subsequent time steps $\Delta\mat{M}$ is
 due to the change in domain boundary location. The matrix applies a laplacian
 kernel at each pixel, a weighted sum of the pixel itself and its 4 neightbours.
 The weights of neighbours are either 1 or 2 depending if at the boundary.
@@ -290,7 +306,7 @@ non-zero elements at rows corresponding to boundary pixels for the previous and
 new boundaries.
 
 This is something to think more about. Can we get some information about changes
-in the eigenvectors/values from the structure of $\Delta\mat{A}$?
+in the eigenvectors/values from the structure of $\Delta\mat{M}$?
 
 \begin{comment}
 We can also just directly think about a time varying matrix, eigenvector and
@@ -328,28 +344,36 @@ discussed above.
 Now we have the coupled systems
 
 \begin{equation}
-\phi_{j+1} = \phi_j + F(\vec{u}_j) \left|\nabla\phi_j\right| \Delta t 
+\phi(t+\Delta t) = \phi(t) + F(\vec{u}(t)) \left|\nabla\phi(t)\right| \Delta t 
 %\frac{\partial \phi}{\partial t} = F(u(\vec{x},t))\left|\nabla\phi(\vec{x})\right|
 \end{equation}
 
 and the eigensystem
 
 \begin{equation}
-\mat{A}_j \vec{v}_j + k_j^2 \vec{v}_j = 0
+\mat{M}(t) \vec{v}(t) + k^2 \vec{v}(t) = 0
 \end{equation}
 
-where $\mat{A}_j$ encodes the laplacian with boundary given by
-$\phi_j(\vec{x})=0$, and the pattern $\vec{u}$ is a weighted sum of these
-eigenvectors
+where at discrete time-step $t=j\Delta t$, $\mat{M}(t)$ encodes the laplacian
+with boundary given by $\phi(\vec{x},t)=0$, and the pattern $\vec{u}(t)$ is a
+weighted sum of its eigenvectors
 
 \begin{equation}
-\vec{u}_{j} = \sum_{k=0}^{N} c_k \vec{v}_k e^{\lambda(k^2) \Delta t}
+\vec{u}(t+\Delta t) = \sum_{k} c_k(t+\Delta t) \vec{v}_k(t+\Delta t) e^{\lambda(k^2) \Delta t}
 \end{equation}
 
-and the weights $c_k$ are the projection of $\vec{u}_j$ into the new 
+and for our time-step $t=j\Delta t$ the weights $c_k$ are the projection of
+the previous pattern $\vec{u}$ into the new set of eigenvectors,
+
+\begin{equation}
+c_k(t+\Delta t) = \langle \vec{u}(t), \vec{v}_k(t+\Delta t) \rangle =
+\vec{u}(t) \cdot \vec{v}_k(t+\Delta t)
+\end{equation}
+
+\section{Algorithm}
 
 
-
+\begin{comment}
 \section{Morphology in eigenspace?}
 
 \section{Appearance of cells as transitions through eigenfunctions as stable
@@ -367,6 +391,7 @@ a cell.
 A function/pattern satisfying given boundary conditions, and subject to
 integrating to unity, is a wave function. This is analagous to quantum mechanics
 and Schroedinger's equation. 
+\end{comment}
 
 \section{}
 \end{document}
