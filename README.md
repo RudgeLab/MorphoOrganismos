@@ -10,4 +10,4 @@ Using FEniCS finite element package to compute eigenfunctions on domains and sol
 4. Run the notebook: jupyter notebook <name>
 
 ## Matlab
-This is old code used to testing some ideas. Based on course regular grid. Not really documented.
+This is old code used to test some ideas. Based on a coarse regular grid. Not really documented.
