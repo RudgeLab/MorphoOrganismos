@@ -1,0 +1,81 @@
+from dolfin import *
+from fenics import *
+import numpy as np
+import mshr
+
+n=48
+geometry=mshr.Circle(Point(0.0,0.0),1.0)
+mesh = mshr.generate_mesh(geometry,n)
+
+print('hola')
+
+from dolfin import *
+from fenics import *
+
+T = 2.0            # final time
+num_steps = 40     # number of time steps
+dt = T / num_steps # time step size
+alpha = 3          # parameter alpha
+beta = 1.2  
+
+n=48
+geometry=mshr.Circle(Point(0.0,0.0),1.0)
+mesh = mshr.generate_mesh(geometry,n)
+V = FunctionSpace(mesh, 'P', 1)
+
+for n in range(3):
+    u_D = Expression('1 + x[0]*x[0] + alpha*x[1]*x[1] + beta*t',
+                 degree=2, alpha=alpha, beta=beta, t=0)
+
+    def boundary(x, on_boundary):
+        return on_boundary
+    
+    bc = DirichletBC(V, u_D, boundary)
+    u_n = interpolate(u_D, V)
+    
+    u = TrialFunction(V)
+    v = TestFunction(V)
+    f = Constant(beta - 2 - 2*alpha)
+
+    F = u*v*dx + dt*dot(grad(u), grad(v))*dx - (u_n + dt*u)*v*dx
+    a, L = lhs(F), rhs(F)
+
+    vtkfile_u_1 = File('reaction_system/u_{}.pvd'.format(n))
+    
+    u = Function(V)
+    t = 0
+    
+    t += dt
+    u_D.t = t # update for bc
+
+    # Compute solution
+    solve(a == L, u, bc)
+    
+    vtkfile_u_1 << u
+
+    # Update previous solution
+    u_n.assign(u)
+    
+    
+    
+    #  To make calculations with the gradient we need to project it to a vector function space.
+    V_vec = VectorFunctionSpace(mesh, "CG", 1)
+    
+    # Mesh velocity
+    MeshVelocity = project(grad(u_n) * u_n **(-1),V_vec)
+    
+    # Mesh's boundary
+    boundary = cpp.mesh.BoundaryMesh(mesh, 'exterior', False)
+    
+    for i in range(len(boundary.coordinates())):
+        p = boundary.coordinates()[i]
+        boundary.coordinates()[i] -= dt*MeshVelocity(p)
+    
+    domain_vertices = [Point(x,y) for x,y in boundary.coordinates()[::8]]
+    
+    geometry = mshr.Polygon(domain_vertices)
+    mesh = mshr.generate_mesh(geometry, 16)
+
+    V = FunctionSpace(mesh, 'P', 1)
+  
+    
